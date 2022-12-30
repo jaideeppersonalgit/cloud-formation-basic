@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This is the first cf template
+Resources:
+  WebServerInstance:
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: "ami-79fd7eee"
+      KeyName: "testkey" 
