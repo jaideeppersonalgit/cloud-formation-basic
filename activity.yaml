@@ -1,8 +1,82 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: This is the first cf template
 Resources:
-  WebServerInstance:
-    Type: AWS::EC2::Instance
+  ActivityVPC:
+    Type: AWS::EC2::VPC
+    Description: "Activity VPC"
     Properties: 
-      ImageId: "ami-79fd7eee"
-      KeyName: "testkey" 
+      CidrBlock: 0.0.0.0/16
+      Tags: 
+      - 
+        Key: Name
+        Value: Section2vpcID
+  ActivitySubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 0.0.0.0/24
+      MapPublicIpOnLaunch: true
+      VpcID: !Ref ActivityVPC
+  ActivityRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties: 
+      VpcId: !Ref ActivityVPC
+  ActivityInternetGateway:
+    Type: AWS::EC2::InternetGateway
+  ActivityGatewayAttachment:
+     Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref ActivityVpc
+      InternetGatewayId: !Ref ActivityInternetGateway
+  InternetRoute:
+    Type: AWS::EC2::Route 
+    DependsOn:
+      - ActivityGatewayAttachment
+    Properties:
+      RouteTableId: !Ref ActivityRouteTable
+      GatewayId: !Ref ActivityInternetGateway
+      DestinationCidrBlock: 0.0.0.0/0
+  ActivitySubnetRouteTableAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref ActivityRouteTable
+      SubnetId: !Ref ActivitySubnet
+  ActivityInstance:
+    Type: AWS::EC2::Instance 
+    DependsOn:
+      - InternetRoute
+      - ActivitySubnetRouteTableAssoc
+    Properties:
+      InstanceType: t2.micro
+      SubnetId: !Ref ActivitySubnet 
+      ImageId: ami-0fad7378adf284ce0
+      SecurityGroupIds:
+        - !Ref ActivitySecurityGroup
+  ActivitySecurityGroup:
+    Type: AWS::EC2::SecurityGroup 
+    Properties:
+      GroupDescription: Activity security group 
+      VpcId: !Ref ActivityVpc
+      SecurityGroupIngress:
+        -
+          CidrIp: 0.0.0.0/0 
+          IpProtocol: icmp
+          FromPort: -1
+          ToPort: -1
+
+
+  
+    
+
+
+
+      
+
+
+
+
+
+
+
+
+  
+  
